@@ -38,7 +38,8 @@ function createConnection() {
 const defaultScope = [
     'https://www.googleapis.com/auth/plus.me',
     'https://www.googleapis.com/auth/userinfo.email',
-    'https://www.googleapis.com/auth/calendar'
+    'https://www.googleapis.com/auth/calendar',
+    'https://www.googleapis.com/auth/calendar.readonly'
 ];
 
 /**
@@ -71,12 +72,12 @@ function sendEvent(auth) {
     'location': '800 Howard St., San Francisco, CA 94103',
     'description': 'A chance to hear more about Google\'s developer products.',
     'start': {
-        'dateTime': '2018-12-02T09:00:00-07:00',
-        'timeZone': 'America/Los_Angeles',
+        'dateTime': '2018-12-02T09:00:00-05:00',
+        'timeZone': 'America/New_York'
     },
         'end': {
-            'dateTime': '2018-12-02T17:00:00-07:00',
-            'timeZone': 'America/Los_Angeles',
+            'dateTime': '2018-12-02T17:00:00-05:00',
+            'timeZone': 'America/New_York'
         },
     };
 
@@ -91,29 +92,36 @@ function sendEvent(auth) {
             console.log('There was an error contacting the Calendar service: ' + err);
             return;
         }
-        console.log('Event created: %s', event.htmlLink);
+        console.log(event);
     });
 }
 
-function getEvents(){
-    const url = "https://www.googleapis.com/calendar/v3/freeBusy"
-    const calendar = google.calendar({version:'v3', auth});
-    calendar.freebusy.query({
-        timeMin: "2018-12-02T09:00:00-07:00",
-        timeMax: "2018-12-02T23:00:00-07:00",
-        timeZone: "America/Los_Angeles",
-        groupExpansionMax: 2,
-        calendarExpansionMax: 2
-        }, function(err, res) {
-            if (err) {
-                console.log('There was an error contacting the Calendar service: ' + err);
-                return;
-            }
-            else{
-                console.log(res);
-            }
-        }
-    );
+function getEvents(auth){
+   var read = {
+       "timeMin": "2018-12-02T09:00:00-05:00",
+       "timeMax": "2018-12-02T17:00:00-05:00",
+       'timeZone': 'America/New_York',
+       "groupExpansionMax": 2,
+       "calendarExpansionMax": 2,
+       "items": [
+           {
+               "id": "primary"
+           }
+       ]
+    };
+   const calendar = google.calendar({version:'v3', auth});
+   calendar.freebusy.query({
+       auth: auth,
+       resource: read,
+       }, function(err, res) {
+       if (err) {
+           console.log('There was an error contacting the Calendar service: ' + err);
+           return;
+       }
+       console.log(res.data);
+       console.log(res.data.calendars);
+       console.log(res.data.calendars.primary.busy)
+   });
 }
 
 /**
