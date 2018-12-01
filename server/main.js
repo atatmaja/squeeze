@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');  
+const Request = require("request");
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));  
@@ -37,6 +38,8 @@ function createConnection() {
 const defaultScope = [
     'https://www.googleapis.com/auth/plus.me',
     'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/calendar',
+    'https://www.googleapis.com/auth/calendar.readonly'
 ];
 
 /**
@@ -63,6 +66,64 @@ function getGooglePlusApi(auth) {
     return google.plus({ version: 'v1', auth });
   }
 
+function sendEvent(auth) {
+    var event = {
+    'summary': 'Google I/O 2015',
+    'location': '800 Howard St., San Francisco, CA 94103',
+    'description': 'A chance to hear more about Google\'s developer products.',
+    'start': {
+        'dateTime': '2018-12-02T09:00:00-05:00',
+        'timeZone': 'America/New_York'
+    },
+        'end': {
+            'dateTime': '2018-12-02T17:00:00-05:00',
+            'timeZone': 'America/New_York'
+        },
+    };
+
+    const calendar = google.calendar({version:'v3', auth});
+
+    calendar.events.insert({
+        auth: auth,
+        calendarId: 'primary',
+        resource: event,
+        }, function(err, event) {
+        if (err) {
+            console.log('There was an error contacting the Calendar service: ' + err);
+            return;
+        }
+        console.log(event);
+    });
+}
+
+function getEvents(auth){
+   var read = {
+       "timeMin": "2018-12-02T09:00:00-05:00",
+       "timeMax": "2018-12-02T17:00:00-05:00",
+       'timeZone': 'America/New_York',
+       "groupExpansionMax": 2,
+       "calendarExpansionMax": 2,
+       "items": [
+           {
+               "id": "primary"
+           }
+       ]
+    };
+   const calendar = google.calendar({version:'v3', auth});
+   calendar.freebusy.query({
+       auth: auth,
+       resource: read,
+       }, function(err, res) {
+       if (err) {
+           console.log('There was an error contacting the Calendar service: ' + err);
+           return;
+       }
+       console.log(res.data);
+       console.log(res.data.calendars);
+       console.log(res.data.calendars.primary.busy)
+   });
+}
+
 /**
  * Part 2: Take the "code" parameter which Google gives us once when the user logs in, then get the user's email and id.
  */
@@ -76,6 +137,12 @@ async function getGoogleAccountFromCode(code) {
     const me = await plus.people.get({ userId: 'me' });
     const userGoogleId = me.data.id;
     const userGoogleEmail = me.data.emails && me.data.emails.length && me.data.emails[0].value;
+    console.log({
+        id: userGoogleId,
+        email: userGoogleEmail,
+        tokens: tokens,
+    });
+    getEvents(auth);
     return {
       id: userGoogleId,
       email: userGoogleEmail,
