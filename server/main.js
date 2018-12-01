@@ -1,6 +1,9 @@
 const express = require('express');
+const bodyParser = require('body-parser');  
 
 const app = express();
+app.use(bodyParser.urlencoded({ extended: false }));  
+app.use(bodyParser.json());
 const port = process.env.PORT || 4000;
 
 var fs = require("fs");
@@ -56,6 +59,30 @@ function urlGoogle() {
     return url;
 }
 
+function getGooglePlusApi(auth) {
+    return google.plus({ version: 'v1', auth });
+  }
+
+/**
+ * Part 2: Take the "code" parameter which Google gives us once when the user logs in, then get the user's email and id.
+ */
+async function getGoogleAccountFromCode(code) {
+    console.log(code);
+    const auth = createConnection();
+    const data = await auth.getToken(code);
+    const tokens = data.tokens;
+    auth.setCredentials(tokens);
+    const plus = getGooglePlusApi(auth);
+    const me = await plus.people.get({ userId: 'me' });
+    const userGoogleId = me.data.id;
+    const userGoogleEmail = me.data.emails && me.data.emails.length && me.data.emails[0].value;
+    return {
+      id: userGoogleId,
+      email: userGoogleEmail,
+      tokens: tokens,
+    };
+  }
+
 app.use(function(req, res, next) {
     res.header('Access-Control-Allow-Origin', '*')
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
@@ -69,6 +96,12 @@ app.get('/api/test', (req, res) => {
 app.get('/api/signIn', (req, res) => {
     const url = urlGoogle();
     res.send({'url': url});
+});
+
+app.get('/api/signInInfo', async (req, res) => {
+    const code = req.query.code;
+    const accountInfo = await getGoogleAccountFromCode(code);
+    res.send({'info': accountInfo});
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
