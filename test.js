@@ -12,7 +12,7 @@ var guy2start;
 var guy1end;
 var guy2end;
 
-
+//find free spaces from a day's worth of busy spaces
 function invertS(guy)
 {
     var i;
@@ -21,55 +21,30 @@ function invertS(guy)
     var busySpace = [];
     var freeSpace = [];
 
+    //represent busy spaces in 2d array format
     for(i=0;i<guy.length;i++)
     {
         guyStart = parseInt(guy[i].start.substring(11,14));
         guyEnd = parseInt(guy[i].end.substring(11,14));
 
         busySpace.push([guyStart, guyEnd]);
-
-        /*
-        if(guyEnd > 8 && !freeSpace)
-        {
-            if(guyStart > 8)
-            {
-                freeSpace.push(8,guyStart);  
-            }
-            freeSpace.push([guyEnd,0]);
-        }
-
-        else if(freeSpace)
-        {
-            if(guyStart > 8 && i === guy.length-1)
-            {
-
-                freeSpace[freeSpace.length-1][1] = guyStart;
-                if(guyEnd >  8)
-                {
-                    freeSpace.push([guyEnd,24]);
-                }
-            }
-            
-
-            else if(guyStart >8 && guyEnd >8)   
-            {
-                freeSpace[freeSpace.length-1][1] = guyStart;
-                freeSpace.push([guyEnd,0]);
-            }
-        }
-        */
     }
 
     let lastFreeTime = 8;
 
-    for(busy in busySpace){
-        if(busy[0] > lastFreeTime && busy[1] < 24){
-            console.log(busy[0]);
+    //find free spaces in between busy ones
+    busySpace.forEach(function(busy, ind){
+        console.log(busy);
+        if(busy[0] > lastFreeTime){
             const freeInterval = [lastFreeTime, busy[0]];
             lastFreeTime = busy[1];
             freeSpace.push(freeInterval);
         }
-    }
+        if(ind === busySpace.length - 1 && busy[1] < 24){
+            freeSpace.push([lastFreeTime, 24]);
+        }
+    });
+
 
     return freeSpace;
 }
