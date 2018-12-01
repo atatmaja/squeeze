@@ -21,6 +21,14 @@ function jsonTraversal(schedule){
     return results;
 }
 
+function parseMapData(body){
+    var parsed = []
+    parsed.push(body.results[0].geometry.location.lat.toString());
+    parsed.push(body.results[0].geometry.location.lng.toString());
+    parsed.push(body.results[0].name);
+
+    return parsed;
+}
 
 module.exports = {
     invertS: invertS,
