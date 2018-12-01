@@ -163,6 +163,7 @@ app.get('/api/submit',(req)=>{
             return console.log(error)
         }
     console.log(body)   
+    sendHelper(body)
     })
 })
 
