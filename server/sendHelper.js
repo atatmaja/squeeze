@@ -21,8 +21,9 @@ function jsonTraversal(schedule){
     return results;
 }
 
-function parseMapData(body){
-    var parsed = []
+function parseMapData(strData){
+    var body =  JSON.parse(strData);
+    var parsed = [];
     var s1 = body.results[0].geometry.location.lat.toString()
     var s2 = body.results[0].geometry.location.lng.toString()
     parsed.push(s1 + "," +  s2);
@@ -32,8 +33,6 @@ function parseMapData(body){
 }
 
 module.exports = {
-    invertS: invertS,
-    mergeS: mergeS,
-    processSchedule
+    paraseMapData
 }
 
