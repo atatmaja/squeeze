@@ -1,6 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');  
 const Request = require("request");
+const scheduleHelper = require("./scheduleHelper.js");
+const moment = require("moment");
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));  
@@ -96,10 +98,14 @@ function sendEvent(auth) {
     });
 }
 
-function getEvents(auth){
+function getEvents(auth, callbackFn){
+    //start at today midnight
+    const timeMin = moment().format('YYYY-MM-DD') + "T00:00:00-05:00"
+    //end seven days from now
+    const timeMax = moment().add(6, 'days').format('YYYY-MM-DD') + "T23:59:00-05:00"
    var read = {
-       "timeMin": "2018-12-02T09:00:00-05:00",
-       "timeMax": "2018-12-02T17:00:00-05:00",
+       "timeMin": timeMin,
+       "timeMax": timeMax,
        'timeZone': 'America/New_York',
        "groupExpansionMax": 2,
        "calendarExpansionMax": 2,
@@ -118,17 +124,17 @@ function getEvents(auth){
            console.log('There was an error contacting the Calendar service: ' + err);
            return;
        }
-       console.log(res.data);
-       console.log(res.data.calendars);
-       console.log(res.data.calendars.primary.busy)
+       else{
+            const freeTimes = scheduleHelper.processSchedule(res.data.calendars.primary.busy);
+            callbackFn(freeTimes);
+       }
    });
 }
 
 /**
  * Part 2: Take the "code" parameter which Google gives us once when the user logs in, then get the user's email and id.
  */
-async function getGoogleAccountFromCode(code) {
-    console.log(code);
+async function getGoogleAccountFromCode(code, callbackFn) {
     const auth = createConnection();
     const data = await auth.getToken(code);
     const tokens = data.tokens;
@@ -137,17 +143,15 @@ async function getGoogleAccountFromCode(code) {
     const me = await plus.people.get({ userId: 'me' });
     const userGoogleId = me.data.id;
     const userGoogleEmail = me.data.emails && me.data.emails.length && me.data.emails[0].value;
-    console.log({
-        id: userGoogleId,
-        email: userGoogleEmail,
-        tokens: tokens,
+
+    getEvents(auth, (times) => {
+        const returnObj = {
+            freeTimes: times,
+            id: userGoogleId,
+            email: userGoogleEmail
+        }
+        callbackFn(returnObj);
     });
-    getEvents(auth);
-    return {
-      id: userGoogleId,
-      email: userGoogleEmail,
-      tokens: tokens,
-    };
   }
 
 app.use(function(req, res, next) {
@@ -167,8 +171,10 @@ app.get('/api/signIn', (req, res) => {
 
 app.get('/api/signInInfo', async (req, res) => {
     const code = req.query.code;
-    const accountInfo = await getGoogleAccountFromCode(code);
-    res.send({'info': accountInfo});
+    getGoogleAccountFromCode(code, function(info){
+        console.log(info);
+        res.send({'info': info});
+    });
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
