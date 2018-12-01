@@ -131,6 +131,19 @@ function getEvents(auth, callbackFn){
    });
 }
 
+app.get('/api/submit',(req)=>{
+    console.log(req.query)
+    const url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + req.query.lat + "," + req.query.lng + "&radius=1500&type=" + req.query.type + "&keyword=" + req.query.keyword + "&key=AIzaSyDjsHLqGWCTqiZBRLDKgBsbcyOn9aoUTEk"
+    //const url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=-33.8670522,151.1957362&radius=1500&type=restaurant&keyword=indian&key=AIzaSyDjsHLqGWCTqiZBRLDKgBsbcyOn9aoUTEk"
+    console.log(url)
+    Request.get(url,(error, response, body) =>{
+        if(error){
+            return console.log(error)
+        }
+        console.log(body)
+    })
+})
+
 /**
  * Part 2: Take the "code" parameter which Google gives us once when the user logs in, then get the user's email and id.
  */
