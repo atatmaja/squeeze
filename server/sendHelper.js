@@ -33,6 +33,6 @@ function parseMapData(strData){
 }
 
 module.exports = {
-    paraseMapData;
+    paraseMapData
 }
 
