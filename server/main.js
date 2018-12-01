@@ -7,13 +7,13 @@ var fs = require("fs");
 
 const {google} = require('googleapis')
 
-var content = fs.readFileSync("../credentials.json");
+var content = fs.readFileSync("../client_id.json");
 var credentialsJson = JSON.parse(content);
 
 const googleConfig = {
-    clientId: credentialsJson.installed.client_id, // e.g. asdfghjkljhgfdsghjk.apps.googleusercontent.com
-    clientSecret: credentialsJson.installed.client_secret, // e.g. _ASDFA%DFASDFASDFASD#FAD-
-    redirect: credentialsJson.installed.redirect_uris[1] // this must match your google api settings
+    clientId: credentialsJson.web.client_id, // e.g. asdfghjkljhgfdsghjk.apps.googleusercontent.com
+    clientSecret: credentialsJson.web.client_secret, // e.g. _ASDFA%DFASDFASDFASD#FAD-
+    redirect: credentialsJson.web.redirect_uris[0] // this must match your google api settings
 };
 
 /**
