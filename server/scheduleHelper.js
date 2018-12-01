@@ -1,17 +1,25 @@
+const moment = require("moment");
 
-
-var guy1 = [{ start: '2018-12-02T16:00:00Z', end: '2018-12-02T18:00:00Z' },
-{ start: '2018-12-02T20:00:00Z', end: '2018-12-02T21:00:00Z' } ];
-
-var guy2 = [{ start: '2018-12-02T07:00:00Z', end: '2018-12-02T09:00:00Z' },
-{ start: '2018-12-02T19:00:00Z', end: '2018-12-02T23:00:00Z' } ];
-
-var i;
-var j;
-var guy1start;
-var guy2start;
-var guy1end;
-var guy2end;
+//find all free spaces for a week's calendar
+function processSchedule(schedule){
+    let lastInd = 0;
+    const results = {};
+    //split up week schedules into dict of day schedules
+    for(let i = 0; i < 7; i++){
+        const date = moment().add(i, 'days').format('YYYY-MM-DD');
+        let currentInd = lastInd;
+        const resultsRaw = [];
+        for(let j = lastInd; j < schedule.length; j++){
+            if(schedule[j].start.substring(0, 10) === date){
+                currentInd = j
+                resultsRaw.push(schedule[j]);
+            }
+        }
+        lastInd = currentInd;
+        results[date] = invertS(resultsRaw);
+    }
+    return results;
+}
 
 //find free spaces from a day's worth of busy spaces
 function invertS(guy)
@@ -45,6 +53,9 @@ function invertS(guy)
         }
     });
 
+    if(busySpace.length === 0){
+        freeSpace.push([lastFreeTime, 24]);
+    }
 
     return freeSpace;
 }
@@ -65,12 +76,9 @@ function mergeS(guy1, guy2){
     return commonFrees
 }
 
-g1 = invertS(guy1);
-g2 = invertS(guy2);
-console.log(g1);
-console.log(g2);
-console.log(mergeS(g1, g2));
-
-//main
-
+module.exports = {
+    invertS: invertS,
+    mergeS: mergeS,
+    processSchedule
+}
 
