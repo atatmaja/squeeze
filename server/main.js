@@ -68,11 +68,10 @@ function getGooglePlusApi(auth) {
     return google.plus({ version: 'v1', auth });
   }
 
-function sendEvent(auth) {
+function sendEvent(auth, arr) {
     var event = {
-    'summary': 'Meet with' + req.query.name,
-    'location': '800 Howard St., San Francisco, CA 94103',
-    'description': 'A chance to hear more about Google\'s developer products.',
+    'summary': 'Meet with' + req.query.toemail,
+    'location': arr[1],
     'start': {
         'dateTime': '2018-12-02T09:00:00-05:00',
         'timeZone': 'America/New_York'
@@ -81,6 +80,7 @@ function sendEvent(auth) {
             'dateTime': '2018-12-02T17:00:00-05:00',
             'timeZone': 'America/New_York'
         },
+
     };
 
     const calendar = google.calendar({version:'v3', auth});
@@ -158,12 +158,15 @@ app.get('/api/submit',(req)=>{
     console.log(req.query)
     const url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + req.query.lat + "," + req.query.lng + "&radius=1500&type=" + req.query.type + "&keyword=" + req.query.keyword + "&key=AIzaSyDjsHLqGWCTqiZBRLDKgBsbcyOn9aoUTEk"
     console.log(url)
-    Request.get(url,(error, response, body) =>{
+    Request.get(url, async (error, response, body) =>{
         if(error){
             return console.log(error)
         }
-    console.log(body)   
-    sendHelper(body)
+        console.log(body)   
+        let arr = await sendHelper(body);
+        sendEvent(auth, arr);
+
+
     })
 })
 
