@@ -70,7 +70,7 @@ function getGooglePlusApi(auth) {
     return google.plus({ version: 'v1', auth });
   }
 
-function sendEvent(auth, req) {
+function sendEvent(auth, req, callbackFn) {
     var event = {
     'summary': 'Squeeze Meet',
     'location': req.query.locationName,
@@ -103,6 +103,10 @@ function sendEvent(auth, req) {
             return;
         }
         console.log(event);
+        //get events after sending
+        if(callbackFn){
+            callbackFn(auth)
+        }
     });
 }
 
@@ -176,26 +180,24 @@ app.get('/api/submit',(req,res)=>{
     Request.get(url, async (error, response, body) =>{
         if(error){
             return console.log(error)
-        }
-        //console.log(body)   
+        } 
         arr = await sendHelper.parseMapData(body);
         console.log(arr[1])
         res.send({'locationName': arr[1]})
-        /* const auth = createConnection();
-        const tokens = req.query.token;
-        console.log(tokens)
-        auth.setCredentials({access_token: tokens}); */
-        //sendEvent(auth, arr, req);
     })
 })
 
 app.get('/api/accept',(req)=>{
     const auth = createConnection();
-        const tokens = req.query.token;
-        //console.log(tokens)
-        auth.setCredentials({access_token: tokens});
-        sendEvent(auth, req);
-
+    const tokens = req.query.token;
+    auth.setCredentials({access_token: tokens});
+    console.log(req.query);
+    sendEvent(auth, req, function(auth){
+        getEvents(auth, (times) => {
+            console.log(times);
+            res.send({"freeTimes": times});
+        });
+    });
 })
 
 //app.get('/api/accept')
