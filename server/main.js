@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const Request = require("request");
 const scheduleHelper = require("./scheduleHelper.js");
 const moment = require("moment");
+const sendHelper = require('./sendHelper.js')
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));  
@@ -68,16 +69,16 @@ function getGooglePlusApi(auth) {
     return google.plus({ version: 'v1', auth });
   }
 
-function sendEvent(auth, arr) {
+function sendEvent(auth, arr, req) {
     var event = {
-    'summary': 'Meet with' + req.query.toemail,
+    'summary': 'Meet with' + req.query.toEmail,
     'location': arr[1],
     'start': {
-        'dateTime': '2018-12-02T09:00:00-05:00',
+        'dateTime': req.query.startTime,
         'timeZone': 'America/New_York'
     },
         'end': {
-            'dateTime': '2018-12-02T17:00:00-05:00',
+            'dateTime': req.query.endTime,
             'timeZone': 'America/New_York'
         },
 
@@ -89,6 +90,9 @@ function sendEvent(auth, arr) {
         auth: auth,
         calendarId: 'primary',
         resource: event,
+        //colorId: {kind
+
+        }
         }, function(err, event) {
         if (err) {
             console.log('There was an error contacting the Calendar service: ' + err);
@@ -148,7 +152,8 @@ async function getGoogleAccountFromCode(code, callbackFn) {
         const returnObj = {
             freeTimes: times,
             id: userGoogleId,
-            email: userGoogleEmail
+            email: userGoogleEmail,
+            token: tokens
         }
         callbackFn(returnObj);
     });
@@ -163,10 +168,13 @@ app.get('/api/submit',(req)=>{
             return console.log(error)
         }
         console.log(body)   
-        let arr = await sendHelper(body);
-        sendEvent(auth, arr);
-
-
+        let arr = await sendHelper.parseMapData(body);
+        console.log(arr)
+        const auth = createConnection();
+        const tokens = req.query.token;
+        console.log(tokens)
+        auth.setCredentials({access_token: tokens});
+        sendEvent(auth, arr, req);
     })
 })
 
