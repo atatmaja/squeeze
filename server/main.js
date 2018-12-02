@@ -4,6 +4,7 @@ const Request = require("request");
 const scheduleHelper = require("./scheduleHelper.js");
 const moment = require("moment");
 const sendHelper = require('./sendHelper.js')
+let arr = []
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));  
@@ -158,7 +159,13 @@ async function getGoogleAccountFromCode(code, callbackFn) {
     });
   }
 
-app.get('/api/submit',(req)=>{
+app.use(function(req, res, next) {
+    res.header('Access-Control-Allow-Origin', '*')
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+    next()
+})
+
+app.get('/api/submit',(req,res)=>{
     console.log(req.query)
     const url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" + req.query.lat + "," + req.query.lng + "&radius=1500&type=" + req.query.type + "&keyword=" + req.query.keyword + "&key=AIzaSyDjsHLqGWCTqiZBRLDKgBsbcyOn9aoUTEk"
     console.log(url)
@@ -166,24 +173,28 @@ app.get('/api/submit',(req)=>{
         if(error){
             return console.log(error)
         }
-        console.log(body)   
-        let arr = await sendHelper.parseMapData(body);
-        console.log(arr)
-        const auth = createConnection();
+        //console.log(body)   
+        arr = await sendHelper.parseMapData(body);
+        console.log(arr[1])
+        res.send({'locationName': arr[1]})
+        /* const auth = createConnection();
         const tokens = req.query.token;
         console.log(tokens)
-        auth.setCredentials({access_token: tokens});
-        sendEvent(auth, arr, req);
+        auth.setCredentials({access_token: tokens}); */
+        //sendEvent(auth, arr, req);
     })
 })
 
-//app.get('/api/accept')
+app.get('/api/accept',(req,arr)=>{
+    const auth = createConnection();
+        const tokens = req.query.token;
+        //console.log(tokens)
+        auth.setCredentials({access_token: tokens});
+        sendEvent(auth, arr, req);
 
-app.use(function(req, res, next) {
-    res.header('Access-Control-Allow-Origin', '*')
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
-    next()
-  })
+})
+
+//app.get('/api/accept')
 
 app.get('/api/test', (req, res) => {
   res.send({ "hi": 'Hello From Express' });
