@@ -187,7 +187,7 @@ app.get('/api/submit',(req,res)=>{
     })
 })
 
-app.get('/api/accept',(req)=>{
+app.get('/api/accept',(req, res)=>{
     const auth = createConnection();
     const tokens = req.query.token;
     auth.setCredentials({access_token: tokens});
