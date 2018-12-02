@@ -91,8 +91,7 @@ function sendEvent(auth, arr, req) {
         calendarId: 'primary',
         resource: event,
         //colorId: {kind
-
-        }
+        //}
         }, function(err, event) {
         if (err) {
             console.log('There was an error contacting the Calendar service: ' + err);
