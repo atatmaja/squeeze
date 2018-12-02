@@ -70,10 +70,13 @@ function getGooglePlusApi(auth) {
     return google.plus({ version: 'v1', auth });
   }
 
-function sendEvent(auth, arr, req) {
+function sendEvent(auth, req) {
     var event = {
-    'summary': 'Meet with ' + req.query.toEmail,
-    'location': arr[1],
+    'summary': 'Squeeze Meet',
+    'location': req.query.locationName,
+    'attendees':[
+        {'email':req.query.toEmail}
+    ],
     'colorId': "3",
     'start': {
         'dateTime': req.query.startTime,
@@ -186,12 +189,12 @@ app.get('/api/submit',(req,res)=>{
     })
 })
 
-app.get('/api/accept',(req,arr)=>{
+app.get('/api/accept',(req)=>{
     const auth = createConnection();
         const tokens = req.query.token;
         //console.log(tokens)
         auth.setCredentials({access_token: tokens});
-        sendEvent(auth, arr, req);
+        sendEvent(auth, req);
 
 })
 
