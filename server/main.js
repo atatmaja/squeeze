@@ -72,7 +72,7 @@ function getGooglePlusApi(auth) {
 
 function sendEvent(auth, arr, req) {
     var event = {
-    'summary': 'Meet with' + req.query.toEmail,
+    'summary': 'Meet with ' + req.query.toEmail,
     'location': arr[1],
     'colorId': "3",
     'start': {
